@@ -32,9 +32,6 @@ ArduinoSerial = serial.Serial('com4', 9600)  # Create Serial port object called 
 time.sleep(2)  # wait for 2 seconds for the communication to get established
 
 
-# sql.execute(f"Update users SET id_version = '{id_vers}' WHERE login = '{user_login}'")
-# sql.execute(f"INSERT INTO users(login, password) VALUES (?, ?)",(user_login, user_password))
-
 class ControlThread(Thread):
     def __init__(self, versionsFuncDataArray):
         super().__init__()
@@ -42,6 +39,7 @@ class ControlThread(Thread):
         self.version = versionsFuncDataArray
         self.pause = False
         self.stop = False
+
     def run(self) -> None:
         while 1:
             if self.stop:
@@ -56,6 +54,7 @@ class ControlThread(Thread):
                 singleFuncName = i[0]
                 if singleFuncName in incoming:
                     function(singleFuncName)
+
 
 def function(string):
     if 'down' == string:
@@ -122,6 +121,7 @@ def function(string):
 
 
 def game():
+
     pygame.init()
 
     SCREEN_HEIGHT = 600
@@ -141,8 +141,8 @@ def game():
                     pygame.image.load("LargeCactus2.png"),
                     pygame.image.load("LargeCactus3.png")]
 
-    BIRD = [pygame.image.load("Bird1.png"),
-            pygame.image.load("Bird2.png")]
+    # BIRD = [pygame.image.load("Bird1.png"),
+    #         pygame.image.load("Bird2.png")]
 
     CLOUD = pygame.image.load("Cloud.png")
 
@@ -181,7 +181,7 @@ def game():
             if self.step_index >= 10:
                 self.step_index = 0
 
-            if userInput[pygame.K_UP] and not self.dino_jump:
+            if userInput[pygame.K_SPACE] and not self.dino_jump:
                 self.dino_duck = False
                 self.dino_run = False
                 self.dino_jump = True
@@ -263,19 +263,6 @@ def game():
             super().__init__(image, self.type)
             self.rect.y = 300
 
-    class Bird(Obstacle):
-        def __init__(self, image):
-            self.type = 0
-            super().__init__(image, self.type)
-            self.rect.y = 250
-            self.index = 0
-
-        def draw(self, SCREEN):
-            if self.index >= 9:
-                self.index = 0
-            SCREEN.blit(self.image[self.index // 5], self.rect)
-            self.index += 1
-
     def main():
         global game_speed, x_pos_bg, y_pos_bg, points, obstacles
         run = True
@@ -314,7 +301,7 @@ def game():
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run = False
+                    sys.exit()
 
             SCREEN.fill((255, 255, 255))
             userInput = pygame.key.get_pressed()
@@ -323,12 +310,10 @@ def game():
             player.update(userInput)
 
             if len(obstacles) == 0:
-                if random.randint(0, 2) == 0:
+                if random.randint(0, 1) == 0:
                     obstacles.append(SmallCactus(SMALL_CACTUS))
-                elif random.randint(0, 2) == 1:
+                elif random.randint(0, 1) == 1:
                     obstacles.append(LargeCactus(LARGE_CACTUS))
-                elif random.randint(0, 2) == 2:
-                    obstacles.append(Bird(BIRD))
 
             for obstacle in obstacles:
                 obstacle.draw(SCREEN)
@@ -349,7 +334,7 @@ def game():
             pygame.display.update()
 
     def menu(death_count):
-        global points
+        global points, text
         run = True
         while run:
             SCREEN.fill((255, 255, 255))
