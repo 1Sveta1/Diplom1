@@ -547,7 +547,7 @@ class Main(QMainWindow):
         self.resize(385, 310)
         self.setStyleSheet("background-color: gray;")
         self.title = "First Window"
-        self.setStyleSheet("QMainWindow { background-image: url(start.jpg); }")
+        self.setStyleSheet("QMainWindow { background-image: url(one.jpg); }")
         self.pushButton = QPushButton(self)
         self.pushButton.setText("Запуск")
 
@@ -556,6 +556,7 @@ class Main(QMainWindow):
                                       "     border: 2px solid #8f8f91;\n"
                                       "     border-color: rgb(255, 255, 255);\n"
                                       "     min-width: 80px;\n"
+                                      "     color: white;\n"
                                       " }\n"
                                       "\n"
                                       " QPushButton:pressed {\n"
@@ -577,6 +578,7 @@ class Main(QMainWindow):
                                         "     border: 2px solid #8f8f91;\n"
                                         "     border-color: rgb(255, 255, 255);\n"
                                         "     min-width: 80px;\n"
+                                        "     color: white;\n"
                                         " }\n"
                                         "\n"
                                         " QPushButton:pressed {\n"
@@ -600,6 +602,7 @@ class Main(QMainWindow):
                                         "     border: 2px solid #8f8f91;\n"
                                         "     border-color: rgb(255, 255, 255);\n"
                                         "     min-width: 80px;\n"
+                                        "     color: white;\n"
                                         " }\n"
                                         "\n"
                                         " QPushButton:pressed {\n"
@@ -622,6 +625,7 @@ class Main(QMainWindow):
                                         "     border: 2px solid #8f8f91;\n"
                                         "     border-color: rgb(255, 255, 255);\n"
                                         "     min-width: 80px;\n"
+                                        "     color: white;\n"
                                         " }\n"
                                         "\n"
                                         " QPushButton:pressed {\n"
