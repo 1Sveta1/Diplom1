@@ -1,0 +1,221 @@
+#include <SoftwareSerial.h>
+SoftwareSerial BTSerial(10, 11); //HC06-TX Pin 10, HC06-RX to Arduino Pin 11
+const int trigger1 = 2; //Trigger pin of 1st Sesnor
+const int echo1 = 3; //Echo pin of 1st Sesnor
+
+const int trigger2 = 4; //Trigger pin of 1st Sesnor
+const int echo2 = 5; //Echo pin of 1st Sesnor
+
+const int trigger3 = 6; //Trigger pin of 1st Sesnor
+const int echo3 = 7; //Echo pin of 1st Sesnor
+
+const int trigger4 = 8; //Trigger pin of 1st Sesnor
+const int echo4 = 9; //Echo pin of 1st Sesnor
+
+long time_taken;
+int dist1,dist2,dist3,dist4,dist;
+int Contcrol = 50;
+
+void setup() {
+// Serial.begin(9600);
+  BTSerial.begin(9600);
+
+  pinMode(trigger1, OUTPUT);
+  pinMode(echo1, INPUT);
+  pinMode(trigger2, OUTPUT);
+  pinMode(echo2, INPUT);
+  pinMode(trigger3, OUTPUT);
+  pinMode(echo3, INPUT);
+  pinMode(trigger4, OUTPUT);
+  pinMode(echo4, INPUT);
+}
+
+void calculate_distance(int trigger, int echo)
+{
+digitalWrite(trigger, LOW);
+delayMicroseconds(2);
+digitalWrite(trigger, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigger, LOW);
+time_taken = pulseIn(echo, HIGH);
+dist=time_taken*0.034/2;
+if (dist>100)
+dist = 100;
+}
+void loop() { //infinite loopy
+calculate_distance(trigger1,echo1);
+dist1 =dist; //get distance of left sensor
+
+calculate_distance(trigger2,echo2);
+dist2 =dist; //get distance of left sensor
+
+calculate_distance(trigger3,echo3);
+dist3 =dist; //get distance of left sensor
+
+calculate_distance(trigger4,echo4);
+dist4 =dist; //get distance of left sensor
+//Uncomment for debudding
+BTSerial.print(" (1): ");
+BTSerial.print(dist1);
+
+BTSerial.print(" | (2): ");
+BTSerial.print(dist2);
+
+BTSerial.print(" | (3): ");
+BTSerial.print(dist3);
+
+BTSerial.print(" | (4): ");
+BTSerial.println(dist4);
+
+
+
+//mouse
+//Lock Left - Control Mode
+if (dist1>=10 && dist1<=20)
+{
+  delay(50); //Hand Hold Time
+  calculate_distance(trigger1,echo1);
+  dist1 =dist;
+  if (dist1>=10 && dist1<=20)
+  {
+    BTSerial.println("mouse Locked");
+    while(dist1<=55 && dist1<=100)
+    {
+      calculate_distance(trigger1,echo1);
+      dist1 =dist;
+      if (dist1 >10 && dist1 <20){
+  delay (Contcrol);
+  if (dist1 >10 && dist1 <20) {
+  BTSerial.println("down"); delay (50);
+  }
+}
+calculate_distance(trigger1,echo1);
+dist1 =dist;
+  if (dist1 >20 && dist1 <30) {
+  BTSerial.println("high"); delay (50)                                                                                                  ;
+  }
+calculate_distance(trigger1,echo1);
+dist1 =dist;
+
+if (dist1 >30 && dist1 <40){
+  delay (Contcrol);
+  if (dist1 >30 && dist1 <40) {
+ BTSerial.println("left"); delay (50);
+  }
+}
+calculate_distance(trigger1,echo1);
+dist1 =dist;
+
+if (dist1 >40 && dist1 <50){
+  delay (Contcrol);
+  if (dist1 >40 && dist1 <50) {
+  BTSerial.println("right"); delay (50);
+  }
+}
+calculate_distance(trigger1,echo1);
+dist1 =dist;
+
+if (dist1 >5 && dist1 <10){
+  delay (Contcrol);
+  if (dist1 >5 && dist1 <10) {
+  BTSerial.println("click"); delay (50);
+  }
+}
+calculate_distance(trigger1,echo1);
+dist1 =dist;
+
+if (dist1 >0 && dist1 <5){
+  delay (Contcrol);
+  if (dist1 >0 && dist1 <5) {
+  BTSerial.println("center"); delay (50);
+  }
+}
+calculate_distance(trigger1,echo1);
+dist1 =dist;
+    }
+  }
+}
+
+//------------------ Датчик 2 --------------------
+//Pause Modes -Hold
+
+calculate_distance(trigger3,echo3);
+dist3 =dist;
+//Control Modes
+//Lock Left - Control Mode
+if (dist2>=10 && dist2<=20)
+{
+  delay(50); //Hand Hold Time
+  calculate_distance(trigger2,echo2);
+  dist2 =dist;
+  if (dist2>=10 && dist2<=20)
+  {
+    BTSerial.println("Left Locked");
+    while(dist2<=55 && dist2<=100)
+    {
+      calculate_distance(trigger2,echo2);
+      dist2 =dist;
+      if (dist2>=0 && dist2<=5) //Hand pushed in
+      {BTSerial.println("Play/Pause"); delay (300);}
+      if (dist2>10 && dist2<20) //Hand pulled out
+      {BTSerial.println("Vdown"); delay (300);}
+      if (dist2>20 && dist2<30) //Hand pulled out
+      {BTSerial.println("Vup"); delay (300);}
+      if (dist2>30 && dist2<40) //Hand pulled out
+      {BTSerial.println("language"); delay (300);}
+    }
+  }
+}
+//Lock Right - Control Mode
+//-----------333333333333333333------------------
+if (dist3>=10 && dist3<=20)
+{
+  delay(50); //Hand Hold Time
+  calculate_distance(trigger3,echo3);
+  dist3 =dist;
+  if (dist3>=10 && dist3<=20)
+  {
+    BTSerial.println("Right Locked");
+    while(dist3<=55 && dist3<=100)
+    {
+      calculate_distance(trigger3,echo3);
+      dist3 =dist;
+      if (dist3>0 && dist3<10) //Right hand pushed in
+      {BTSerial.println("Rewind"); delay (300);}
+      if (dist3>10 && dist3<20) //Right hand pulled out
+      {BTSerial.println("Forward"); delay (300);}
+      if (dist3>40 && dist3<50) //Right hand pulled out
+      {BTSerial.println("Win+d"); delay (300);}
+      if (dist3>30 && dist3<40) //Right hand pulled out
+      {BTSerial.println("ctrl+z"); delay (300);}
+  }
+}
+}
+//-----------44444444444444444---------------
+if (dist4>=10 && dist4<=20)
+{
+  delay(50); //Hand Hold Time
+  calculate_distance(trigger4,echo4);
+  dist4 =dist;
+  if (dist4>=10 && dist4<=20)
+  {
+   BTSerial.println("4 Locked");
+    while(dist4<=55 && dist4<=100)
+    {
+         calculate_distance(trigger4,echo4);
+         dist4 =dist;
+      if (dist4>0 && dist4<=5) //Hand pushed in
+      {BTSerial.println("click_r"); delay (300);}
+      if (dist4>10 && dist4<20) //Hand pulled out
+      {BTSerial.println("Sdown"); delay (300);}
+      calculate_distance(trigger4,echo4);
+      dist4 =dist;
+      if (dist4>20 && dist4<30) //Right hand pushed in
+    {BTSerial.println("Sup"); delay (50);}
+     if (dist4>30 && dist4<40) //Right hand pushed in
+    {BTSerial.println("ctrl+alt+delete"); delay (50);}
+  }
+}
+}
+delay(50);
+}
