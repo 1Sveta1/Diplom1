@@ -34,8 +34,7 @@ time.sleep(2)  # wait for 2 seconds for the communication to get established
 
 def function(string):
     if 'down' == string:
-        pyautogui.press('pageup')
-        # pyautogui.move(0, 20)
+        pyautogui.move(0, 20)
 
     if 'high' == string:
         # pyautogui.move(0, -20)
@@ -156,7 +155,7 @@ def game():
             if self.step_index >= 10:
                 self.step_index = 0
 
-            if userInput[pygame.K_UP] and not self.dino_jump:
+            if userInput[pygame.K_SPACE] and not self.dino_jump:
                 self.dino_duck = False
                 self.dino_run = False
                 self.dino_jump = True

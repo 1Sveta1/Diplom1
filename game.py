@@ -58,8 +58,8 @@ class ControlThread(Thread):
 
 def function(string):
     if 'down' == string:
-        # pyautogui.press('pageup')
-        pyautogui.move(0, 20)
+        pyautogui.typewrite(['space'], 0.2)
+        # pyautogui.move(0, 20)
 
     if 'high' == string:
         # pyautogui.move(0, -20)
@@ -301,7 +301,7 @@ def game():
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    sys.exit()
+                    run = False
 
             SCREEN.fill((255, 255, 255))
             userInput = pygame.key.get_pressed()
