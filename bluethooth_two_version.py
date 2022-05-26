@@ -18,15 +18,41 @@ global user_password
 global id_vers
 global user_id
 global func_1
+ard_thread = None
+
+from threading import Thread
+
 db = sqlite3.connect('server1.db')
 sql = db.cursor()
 
 # ArduinoSerial = serial.Serial('com4', 9600)  # Create Serial port object called arduinoSerialData
 # time.sleep(2)  # wait for 2 seconds for the communication to get established
-ser = serial.Serial('COM6', 9600)  # Change your port name COM... and your baudrate
+# ser = serial.Serial('COM6', 9600)  # Change your port name COM... and your baudrate
 # time.sleep(2)
-# sql.execute(f"Update users SET id_version = '{id_vers}' WHERE login = '{user_login}'")
-# sql.execute(f"INSERT INTO users(login, password) VALUES (?, ?)",(user_login, user_password))
+
+class ControlThread(Thread):
+    def __init__(self, versionsFuncDataArray):
+        super().__init__()
+        self.name = "Name"
+        self.version = versionsFuncDataArray
+        self.pause = False
+        self.stop = False
+
+    def run(self) -> None:
+        while 1:
+            if self.stop:
+                return
+            if self.pause:
+                print("paused")
+                time.sleep(1)
+                continue
+            # incoming = str(ser.readline())  # read the serial data and print it as line
+            # print(incoming)
+            # for i in self.version:
+            #     singleFuncName = i[0]
+            #     if singleFuncName in incoming:
+            #         function(singleFuncName)
+
 
 def function(string):
     if 'down' == string:
@@ -52,7 +78,6 @@ def function(string):
         center_y = screensize_1 / 2
         pyautogui.moveTo(center_x, center_y)
 
-    # 2 датчик
     if 'Play/Pause' == string:
         pyautogui.typewrite(['space'], 0.2)
 
@@ -74,8 +99,9 @@ def function(string):
     if 'Win+d' == string:
         pyautogui.hotkey('win', 'd')
 
-    if 'ctrl+z' == string:
-        pyautogui.hotkey('ctrl', 'z')
+    if 'Exit' == string:
+        # window2.show()
+        pyautogui.write("wwew")
 
     if 'click_r' == string:
         pyautogui.rightClick()
@@ -683,7 +709,13 @@ class Main(QMainWindow):
         global id_vers
         global func_1
         global user_id
-        self.hide()
+        global ard_thread
+        if ard_thread:
+            if ard_thread.pause:
+                ard_thread.pause = False
+            else:
+                ard_thread.pause = True
+                return
         vers_znach = sql.execute(f"Select id_version From users Where id = '{user_id}'")
         name = vers_znach.fetchone()
         print(name[0])
@@ -693,20 +725,8 @@ class Main(QMainWindow):
             versionsFuncData = versionsFunc.fetchall()
             versionsFuncDataArray = np.array(versionsFuncData)
             print(versionsFuncDataArray)
-            while 1:
-                incoming = str(ser.readline())  # read the serial data and print it as line
-                print(incoming)
-                for i in versionsFuncDataArray:
-                    singleFuncName = i[0]
-                    if singleFuncName in incoming:
-                        function(singleFuncName)
-        else:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Critical)
-            msg.setText("Error")
-            msg.setInformativeText('More information')
-            msg.setWindowTitle("Error")
-            msg.exec_()
+            ard_thread = ControlThread(versionsFuncDataArray)
+            ard_thread.start()
 
     def exit(self):
         window2.close()
