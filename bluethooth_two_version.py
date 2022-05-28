@@ -40,23 +40,23 @@ sql = db.cursor()
 #     else:
 #         ser.write(b'0')
 
-
-arduino_ports = [
-    p.device
-    for p in serial.tools.list_ports.comports()
-    if "Standard Serial over Bluetooth link" in p.description or 'USB-SERIAL CH340' in p.description
-]
-if not arduino_ports:
-    raise IOError("No Arduino found")
-else:
-    for p in serial.tools.list_ports.comports():
-        print(p)
-
-if len(arduino_ports) > 1:
-    warnings.warn('Multiple Arduinos found - using the first')
-    print(arduino_ports)
-
-ser = serial.Serial(arduino_ports[2])
+#
+# arduino_ports = [
+#     p.device
+#     for p in serial.tools.list_ports.comports()
+#     if "Standard Serial over Bluetooth link" in p.description or 'USB-SERIAL CH340' in p.description
+# ]
+# if not arduino_ports:
+#     raise IOError("No Arduino found")
+# else:
+#     for p in serial.tools.list_ports.comports():
+#         print(p)
+#
+# if len(arduino_ports) > 1:
+#     warnings.warn('Multiple Arduinos found - using the first')
+#     print(arduino_ports)
+#
+# ser = serial.Serial(arduino_ports[2])
 
 
 class ControlThread(Thread):
@@ -67,7 +67,22 @@ class ControlThread(Thread):
         self.pause = False
         self.stop = False
 
+
     def run(self) -> None:
+        arduino_ports = [
+            p.device
+            for p in serial.tools.list_ports.comports()
+            if "Standard Serial over Bluetooth link" in p.description or 'USB-SERIAL CH340' in p.description
+        ]
+        if not arduino_ports:
+            raise IOError("No Arduino found")
+        else:
+            for p in serial.tools.list_ports.comports():
+                print(p)
+        if len(arduino_ports) > 1:
+            warnings.warn('Multiple Arduinos found - using the first')
+            print(arduino_ports)
+        ser = serial.Serial(arduino_ports[2])
         while 1:
             if self.stop:
                 return
@@ -751,11 +766,6 @@ class Main(QMainWindow):
         self.pushButton_3.clicked.connect(self.window3)
         self.pushButton_2.clicked.connect(self.window2)
         self.pushButton_4.clicked.connect(self.exit)
-        self.restart()
-
-    def restart(self):
-        if keyboard.is_pressed('A'):
-            print("sfsf")
 
     def arduino_start(self):
         global id_vers
