@@ -7,8 +7,10 @@ import serial  # Serial imported for Serial communication
 import time  # Required to use delay functions
 import pyautogui
 import ctypes
+import warnings
 import keyboard
 import pickle
+import serial.tools.list_ports
 import sqlite3
 import numpy as np
 from PyQt5.uic.properties import QtCore
@@ -18,6 +20,7 @@ global user_password
 global id_vers
 global user_id
 global func_1
+global port_arduino
 ard_thread = None
 
 from threading import Thread
@@ -25,10 +28,36 @@ from threading import Thread
 db = sqlite3.connect('server1.db')
 sql = db.cursor()
 
-# ArduinoSerial = serial.Serial('com4', 9600)  # Create Serial port object called arduinoSerialData
-# time.sleep(2)  # wait for 2 seconds for the communication to get established
-# ser = serial.Serial('COM6', 9600)  # Change your port name COM... and your baudrate
-# time.sleep(2)
+# def retrieveData():
+#     ser.write(b'1')
+#     data = ser.readline().decode('ascii')
+#     return data
+#
+# while(True):
+#     uInput = input("Retrieve data? ")
+#     if uInput == '1':
+#         print(retrieveData())
+#     else:
+#         ser.write(b'0')
+
+
+arduino_ports = [
+    p.device
+    for p in serial.tools.list_ports.comports()
+    if "Standard Serial over Bluetooth link" in p.description or 'USB-SERIAL CH340' in p.description
+]
+if not arduino_ports:
+    raise IOError("No Arduino found")
+else:
+    for p in serial.tools.list_ports.comports():
+        print(p)
+
+if len(arduino_ports) > 1:
+    warnings.warn('Multiple Arduinos found - using the first')
+    print(arduino_ports)
+
+ser = serial.Serial(arduino_ports[2])
+
 
 class ControlThread(Thread):
     def __init__(self, versionsFuncDataArray):
@@ -46,12 +75,12 @@ class ControlThread(Thread):
                 print("paused")
                 time.sleep(1)
                 continue
-            # incoming = str(ser.readline())  # read the serial data and print it as line
-            # print(incoming)
-            # for i in self.version:
-            #     singleFuncName = i[0]
-            #     if singleFuncName in incoming:
-            #         function(singleFuncName)
+            incoming = str(ser.readline())  # read the serial data and print it as line
+            print(incoming)
+            for i in self.version:
+                singleFuncName = i[0]
+                if singleFuncName in incoming:
+                    function(singleFuncName)
 
 
 def function(string):
@@ -119,26 +148,35 @@ def function(string):
 class Settings(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Настройки")
+        self.setWindowTitle("Налаштування")
         self.setStyleSheet("background-color: gray")
-        self.resize(320, 280)
+        # self.resize(600, 350)
+        self.setFixedSize(600, 350)
         self.setStyleSheet("QMainWindow { background-image: url(222.jpg); }")
         self.checkBox_13 = QCheckBox("Просунутий", self)
-        self.checkBox_13.setGeometry(50, 152, 150, 20)
+        self.checkBox_13.setGeometry(50, 220, 150, 20)
         self.checkBox_13.setObjectName("checkBox_13")
         self.checkBox_13.setStyleSheet("QCheckBox::indicator:pressed"
                                        "{"
                                        "background-color : lightgreen;"
                                        "}")
-        self.label_2 = QLabel("Вибір версії", self)
-        self.label_2.setGeometry(40, 20, 200, 30)
-        self.label_2.setStyleSheet("color: rgb(255, 255, 255);""font: 75 italic 15pt \"Times New Roman\";")
-        self.label_2.setObjectName("label_2")
+        self.title_setting = QLabel("Налаштування", self)
+        self.title_setting.setGeometry(150, 20, 300, 45)
+        self.title_setting.setStyleSheet("color: rgb(255, 255, 255);""font: 75 italic 20pt \"Times New Roman\";")
+        self.title_setting.setObjectName("label_2")
+        self.name_vers = QLabel("Вибір версії", self)
+        self.name_vers.setGeometry(40, 80, 200, 30)
+        self.name_vers.setStyleSheet("color: rgb(255, 255, 255);""font: 75 italic 15pt \"Times New Roman\";")
+        self.name_vers.setObjectName("label_2")
+        self.type_connect = QLabel("Вибір типу підключення", self)
+        self.type_connect.setGeometry(250, 80, 320, 30)
+        self.type_connect.setStyleSheet("color: rgb(255, 255, 255);""font: 75 italic 15pt \"Times New Roman\";")
+        self.type_connect.setObjectName("label_3")
         self.checkBox_11 = QCheckBox("Початкова", self)
-        self.checkBox_11.setGeometry(50, 80, 130, 20)
+        self.checkBox_11.setGeometry(50, 140, 130, 20)
         self.checkBox_11.setObjectName("checkBox_11")
         self.checkBox_12 = QCheckBox("Впевнене управління", self)
-        self.checkBox_12.setGeometry(50, 116, 240, 20)
+        self.checkBox_12.setGeometry(50, 180, 240, 20)
         self.checkBox_12.setObjectName("checkBox_12")
         self.checkBox_11.setStyleSheet("QCheckBox::indicator:pressed"
                                        "{"
@@ -151,8 +189,24 @@ class Settings(QMainWindow):
                                        "}")
         self.checkBox_12.setStyleSheet("color: rgb(255, 255, 255);""font: 10pt \"Blackadder ITC\";\n""")
         self.checkBox_13.setStyleSheet("color: rgb(255, 255, 255);""font: 10pt \"Blackadder ITC\";\n""")
+        self.bluetooth = QCheckBox("bluetooth", self)
+        self.bluetooth.setGeometry(340, 140, 130, 20)
+        self.bluetooth.setObjectName("checkBox_13")
+        self.bluetooth.setStyleSheet("QCheckBox::indicator:pressed"
+                                     "{"
+                                     "background-color : lightgreen;"
+                                     "}")
+        self.cable = QCheckBox("Кабель", self)
+        self.cable.setGeometry(340, 180, 150, 20)
+        self.cable.setObjectName("checkBox_13")
+        self.cable.setStyleSheet("QCheckBox::indicator:pressed"
+                                 "{"
+                                 "background-color : lightgreen;"
+                                 "}")
+        self.cable.setStyleSheet("color: rgb(255, 255, 255);""font: 10pt \"Blackadder ITC\";\n""")
+        self.bluetooth.setStyleSheet("color: rgb(255, 255, 255);""font: 10pt ;\n""")
         self.Sohr = QPushButton("Зберегти", self)
-        self.Sohr.setGeometry(30, 200, 120, 60)
+        self.Sohr.setGeometry(30, 280, 120, 30)
         self.Sohr.setStyleSheet(" QPushButton {\n"
                                 "     border: 2px solid #8f8f91;\n"
 
@@ -176,14 +230,14 @@ class Settings(QMainWindow):
                            font-style: oblique;
                            font-weight: bold;
                            border: 2px solid #8f8f91;
-                           border-radius: 10px;
+                           border-radius: 3px;
                            color: #1DA1F2;
                            background-color: #fff;
                        }
                        """)
         self.Sohr.setObjectName("Sohr")
         self.back = QPushButton("Назад", self)
-        self.back.setGeometry(160, 200, 120, 60)
+        self.back.setGeometry(450, 280, 120, 30)
         self.back.setStyleSheet(" QPushButton {\n"
                                 "     border: 2px solid #8f8f91;\n"
 
@@ -207,16 +261,23 @@ class Settings(QMainWindow):
                            font-style: oblique;
                            font-weight: bold;
                            border: 2px solid #8f8f91;
-                           border-radius: 10px;
+                           border-radius: 3px;
                            color: #1DA1F2;
                            background-color: #fff;
                        }
                        """)
         self.back.setObjectName("back")
         self.back.clicked.connect(self.add)
-        self.Sohr.clicked.connect(self.qwq)
+        self.Sohr.clicked.connect(self.func_version)
         self.Sohr.clicked.connect(self.StateCheckBox)
         self.Sohr.clicked.connect(self.print_user_id)
+        self.Sohr.clicked.connect(self.type_connecting)
+
+    def type_connecting(self):
+        if self.bluetooth.isChecked():
+            ser.write(b'1')
+        elif self.cable.isChecked():
+            ser.write(b'2')
 
     def print_user_id(self):
         global id_vers
@@ -248,7 +309,7 @@ class Settings(QMainWindow):
             self.checkBox_12.setDisabled(True)
             self.checkBox_11.setDisabled(True)
 
-    def qwq(self):
+    def func_version(self):
         print(user_id)
         global id_vers
         if self.checkBox_11.isChecked():
@@ -273,14 +334,6 @@ class Settings(QMainWindow):
     def add(self):
         window2.show()
         self.hide()
-
-    # def proverka(self):
-    #     user_login = self.lineEdit.text()
-    #     if id_vers == 1:
-    #         sql.execute(f"INSERT INTO users(id_version) VALUES (?) WHERE login = '{user_login}'", (id_vers))
-    #         db.commit()
-    #         for value in sql.execute("SELECT * FROM users"):
-    #              print(value)
 
 
 class Avtoriz(QMainWindow):
@@ -467,7 +520,6 @@ class Avtoriz(QMainWindow):
             if b[0] is None:
                 window2.inform.setText("Версія не обрана!!!")
                 window2.inform.setStyleSheet("color: red;""font: 10pt \"Blackadder ITC\";\n""")
-
             login_user = sql.execute(f"Select login From users Where id= '{user_id}'")
             c = login_user.fetchone()
             print(c[0])
@@ -761,5 +813,3 @@ if __name__ == "__main__":
     window3 = Settings()
     window.show()
     sys.exit(app.exec())
-
-
